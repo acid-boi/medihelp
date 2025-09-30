@@ -1,3 +1,3 @@
 ### MediHelp
 
-This is our course project for CS699 at IIT Bombay.
+This is our course project for CS699 (SLab) at IIT Powai.
