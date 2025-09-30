@@ -6,6 +6,7 @@ __pycache__/
 .Python
 env/
 venv/
+slab_backend/
 .venv/
 build/
 develop-eggs/
@@ -30,3 +31,4 @@ eggs/
 
 # Logs
 *.log
+
