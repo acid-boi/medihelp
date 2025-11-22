@@ -12,7 +12,6 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: medihelp
     volumes:
-      - ./database/db_data:/var/lib/postgresql/data
       - ./database/db_init:/docker-entrypoint-initdb.d
       - ./database:/csv_data
     ports:

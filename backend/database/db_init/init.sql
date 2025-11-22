@@ -26,7 +26,6 @@ CREATE TABLE medicines (
 CREATE INDEX idx_generic_name_trgm
 ON generic_medicines USING gin (generic_name gin_trgm_ops);
 
-CREATE INDEX idx_medicines_brand_name ON medicines(brand_name)
 
 COPY generic_medicines
 FROM '/csv_data/genericmedicines.csv'
