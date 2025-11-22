@@ -1,4 +1,6 @@
 fastapi
 uvicorn
 redis
+psycopg2-binary
+rapidfuzz
 python-multipart

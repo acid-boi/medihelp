@@ -4,6 +4,22 @@ services:
     networks:
       - medihelp-network
 
+  database:
+    image: postgres:15
+    container_name: medihelp-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: medihelp
+    volumes:
+      - ./database/db_data:/var/lib/postgresql/data
+      - ./database/db_init:/docker-entrypoint-initdb.d
+      - ./database:/csv_data
+    ports:
+      - "5432:5432"
+    networks:
+      - medihelp-network
+
   server:
     build:
       context: .
@@ -13,8 +29,13 @@ services:
     environment:
       - REDIS_HOST=redis
       - PYTHONPATH=/app
+      - DB_HOST=database
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+      - DB_NAME=medihelp
     depends_on:
       - redis
+      - database
       - ocr_worker
     networks:
       - medihelp-network
@@ -27,11 +48,19 @@ services:
     environment:
       - REDIS_HOST=redis
       - PYTHONPATH=/app
+      - DB_HOST=database
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+      - DB_NAME=medihelp
     depends_on:
       - redis
+      - database
     networks:
       - medihelp-network
 
 networks:
   medihelp-network:
+
+volumes:
+  db_data:
 

@@ -22,7 +22,7 @@ eggs/
 .idea/
 *.sublime-project
 *.sublime-workspace
-
+./backend/database/db_data/*
 # Environment variables
 .env
 .env.local
