@@ -15,13 +15,15 @@ services:
       - PYTHONPATH=/app
     depends_on:
       - redis
+      - ocr_worker
     networks:
       - medihelp-network
 
   ocr_worker:
+    image: ocr_worker_image
     build:
-      context: .
-      dockerfile: ocr_worker/Dockerfile
+      context: ./ocr_worker
+      dockerfile: Dockerfile
     environment:
       - REDIS_HOST=redis
       - PYTHONPATH=/app
@@ -32,3 +34,4 @@ services:
 
 networks:
   medihelp-network:
+
