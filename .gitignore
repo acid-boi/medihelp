@@ -1,34 +1,10 @@
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-env/
-venv/
-slab_backend/
-.venv/
-build/
-develop-eggs/
+node_modules/
 dist/
-eggs/
-*.egg-info/
-.installed.cfg
-*.manifest
-*.spec
-
-# Editors
+build/
+.vite/
+.env
+.env.*
+*.log
+.DS_Store
 .vscode/
 .idea/
-*.sublime-project
-*.sublime-workspace
-
-# Environment variables
-.env
-.env.local
-.env.development
-.env.production
-
-# Logs
-*.log
-
