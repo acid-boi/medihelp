@@ -9,7 +9,7 @@ import logging
 import psycopg2
 from psycopg2.pool import SimpleConnectionPool
 from rapidfuzz import fuzz, process
-
+from server.store_finder import find_nearby_stores
 
 app = FastAPI()
 
@@ -64,9 +64,35 @@ async def get_result(task_id: str):
 
     return {"status": "done", "text": json.loads(result)}
 
+@app.post("/findNearestStores")
+def find_nearest_stores(latitude: float, longitude: float):
+    try:
+        result = find_nearby_stores(latitude, longitude, DB_POOL)
+        
+        return {
+            "user_location": {
+                "latitude": latitude,
+                "longitude": longitude
+            },
+            "s2_level_used": result["s2_level_used"],
+            "stores_found": result["stores_found"],
+            "nearest_stores": result["stores"]
+        }
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
+
+
+
+
+
+
 
 @app.get("/getSuggestions")
-async def get_suggestions(q: str = Query(..., min_length=2)):
+def get_suggestions(q: str = Query(..., min_length=2)):
     conn = None
     try:
         conn = DB_POOL.getconn()

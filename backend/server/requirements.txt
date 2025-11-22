@@ -4,3 +4,4 @@ redis
 psycopg2-binary
 rapidfuzz
 python-multipart
+s2sphere
