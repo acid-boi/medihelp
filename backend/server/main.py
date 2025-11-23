@@ -1,5 +1,6 @@
 from fastapi import FastAPI, UploadFile, HTTPException, Query
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 import uuid
 import base64
 import redis
@@ -13,11 +14,15 @@ from server.store_finder import find_nearby_stores
 
 app = FastAPI()
 
+origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
+
 r = redis.Redis(
     host=os.getenv("REDIS_HOST", "localhost"),
     port=6379,
     decode_responses=False
 )
+
+app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
 TASK_QUEUE = "ocr:tasks"
 
