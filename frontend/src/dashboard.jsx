@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "./medihelp.css";
-// import UploadAndDisplayImage from './uploadImage.jsx'
+import govtFundingPlot from '../assets/govt_funding.png';
+import totalJAKsPlot from '../assets/total_opened_JAKs.png';
 
 const API_URL = "http://localhost:8000";
 
@@ -90,9 +91,9 @@ export default function Dashboard() {
 
       {/* tabs */}
       <nav className="top-tabs">
-        <TabButton id="dashboard" label="Dashboard" />
+        <TabButton id="dashboard" label="What is Medihelp?" />
         <TabButton id="prescriptions" label="Prescriptions" />
-        <TabButton id="reminders" label="Reminders" />
+        {/* <TabButton id="reminders" label="Reminders" /> */}
         <TabButton id="storeLocator" label="Store Locator" />
         {/* <TabButton id="profile" label="Profile" /> */}
         {/* <TabButton id="settings" label="Settings" /> */}
@@ -101,23 +102,75 @@ export default function Dashboard() {
       {/* different pages for each tab */}
       <div id="content-area">
         <Screen id="dashboard">
-          <div className="login-card">
-            <h3>Today's Medicines</h3>
-            <ul>
-              <li>
-                <input type="checkbox" /> Med A
-              </li>
-              <li>
-                <input type="checkbox" /> Med B
-              </li>
-            </ul>
+          <div className="login-card" style={{ textAlign: 'center' }}>
+            <h2 style={{ color: '#2c3e50', marginBottom: '10px' }}>
+              Why Pay More for the Same Cure?
+            </h2>
+            <p style={{ fontSize: '1rem', color: '#555', lineHeight: '1.5' }}>
+              <strong>MediHelp</strong> bridges the gap between you and affordable healthcare. 
+              We help you find <strong>Jan Aushadhi Kendras</strong> set up by the Government of India where medicines are 
+              <strong> 50% to 90% cheaper</strong> than branded alternatives. Under the Pradhan Mantri Bhartiya Janaushadhi Pariyojana (PMBJP), as of September 30, 2024, a total of 13,822 Jan Aushadhi Kendras have been established across the country. PMBJP, in last 10 years, has led to estimated savings of Rs. 30,000 Crores for the citizens as compared to the branded medicines.
+
+            </p>
           </div>
 
           <div className="login-card">
-            <h3>Quick Metrics</h3>
-            <p>Weight: 72kg</p>
-            <p>BMI: 22.4</p>
+            <h3>Growth & Impact</h3>
+            <p style={{ fontSize: '0.9rem', marginBottom: '15px', color: '#666' }}>
+              Government investment and the number of centers are rising rapidly, ensuring you have access to affordable meds nearby.
+            </p>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+              
+              <div className="plot-container" style={{ textAlign: 'center' }}>
+                <img src={govtFundingPlot} alt="Graph showing sales growth" 
+                  style={{ 
+                    width: '100%',
+                    maxWidth: '650px',
+                    height: 'auto',
+                    borderRadius: '8px', 
+                    border: '1px solid #ddd',
+                    display: 'block',
+                    margin: '0 auto'
+                  }}
+                />
+                <p style={{textAlign: 'center', fontSize: '0.8rem', marginTop: '8px', color: '#555'}}>
+                  Government of India has been increasing investment in PMBJP program
+                </p>
+              </div>
+              
+              <div className="plot-container" style={{ textAlign: 'center' }}>
+                <img src={totalJAKsPlot} alt="Graph showing increase in centers" 
+                  style={{ 
+                    width: '100%', 
+                    maxWidth: '650px',
+                    height: 'auto', 
+                    borderRadius: '8px', 
+                    border: '1px solid #ddd',
+                    display: 'block',
+                    margin: '0 auto' 
+                  }} 
+                />
+                 <p style={{textAlign: 'center', fontSize: '0.8rem', marginTop: '8px', color: '#555'}}>
+                    By Sept. 2024, over 13,000 JAKs have been set up. Government is targeting 25,000 Kendras
+                 </p>
+              </div>
+
+            </div>
           </div>
+
+          <div className="login-card" style={{ textAlign: 'center', background: '#e8f6f3' }}>
+            <h3>Ready to save?</h3>
+            <p style={{fontSize: '0.9rem'}}>Upload your prescription to find generic alternatives now.</p>
+            <button 
+              className="submit-button" 
+              onClick={() => setTab('prescriptions')}
+              style={{ marginTop: '10px' }}
+            >
+              Start Now
+            </button>
+          </div>
+          
         </Screen>
 
         <Screen id="prescriptions">
@@ -150,14 +203,14 @@ export default function Dashboard() {
           </div>
         </Screen>
 
-        <Screen id="reminders">
-          <h2 className="card-title">Reminders</h2>
-          <div className="login-card">
-            <p>Med A — 8 AM / 8 PM</p>
-            <p>Med B — 9 AM</p>
-            <button className="submit-button">Add Reminder</button>
-          </div>
-        </Screen>
+        {/* <Screen id="reminders"> */}
+        {/*   <h2 className="card-title">Reminders</h2> */}
+        {/*   <div className="login-card"> */}
+        {/*     <p>Med A — 8 AM / 8 PM</p> */}
+        {/*     <p>Med B — 9 AM</p> */}
+        {/*     <button className="submit-button">Add Reminder</button> */}
+        {/*   </div> */}
+        {/* </Screen> */}
 
         <Screen id="storeLocator">
           <h2 className="card-title">Nearest Store Locator</h2>
