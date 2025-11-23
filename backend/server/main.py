@@ -46,5 +46,3 @@ async def get_result(task_id: str):
     
     return {"status": "done", "text": json.loads(result)}
 
-
-@app.get("")
