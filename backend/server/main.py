@@ -14,7 +14,7 @@ from server.store_finder import find_nearby_stores
 
 app = FastAPI()
 
-origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
+origins = ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:5176", "http://127.0.0.1:5176"]
 
 r = redis.Redis(
     host=os.getenv("REDIS_HOST", "localhost"),

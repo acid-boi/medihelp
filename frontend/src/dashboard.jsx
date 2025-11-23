@@ -7,12 +7,20 @@ const API_URL = "http://localhost:8000";
 
 export default function Dashboard() {
   const [tab, setTab] = useState("dashboard");
-  const [showMeds, setShowMeds] = useState(false);
-  const [ready, setReady] = useState("No prescription uploaded");
+  // const [showMeds, setShowMeds] = useState(false);
+  // const [ready, setReady] = useState("No prescription uploaded");
 
   const [locationStatus, setLocationStatus] = useState("Click 'Find Nearest Stores' to get your location and search.");
   const [nearestStores, setNearestStores] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
+
+  const [ocrStatus, setOcrStatus] = useState("No prescription uploaded");
+  const [imagePreview, setImagePreview] = useState(null);
+  const [meds, setMeds] = useState([]);
+
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [retryTaskId, setRetryTaskId] = useState(null);
 
   const TabButton = ({ id, label }) => (
     <button className="tab-btn" onClick={() => setTab(id)}>
@@ -29,10 +37,77 @@ export default function Dashboard() {
     </section>
   );
 
-  const filterBySize = (file) => {
-    //filter out images larger than 5MB
-    return file.size <= 5242880;
+    // ------------------------------------------------------
+  // UPLOAD + POLLING LOGIC
+  // ------------------------------------------------------
+
+  const handleFileSelected = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setErrorMsg("");
+    setLoading(true);
+    setMeds([]);
+    setImagePreview(URL.createObjectURL(file));
+    setOcrStatus("Uploading...");
+
+    const form = new FormData();
+    form.append("file", file);
+
+    try {
+      const res = await fetch("http://localhost:8000/upload", {
+        method: "POST",
+        body: form,
+      });
+
+      const uploadJson = await res.json();
+      const taskId = uploadJson.task_id;
+      console.log("Upload successful, task ID:", taskId);
+      setRetryTaskId(taskId);
+      setOcrStatus("Processing...");
+      pollForResult(taskId);
+
+    } catch (err) {
+      console.error(err);
+      setLoading(false);
+      setErrorMsg("Upload failed — check backend.");
+      setOcrStatus("Failed.");
+    }
   };
+
+  const pollForResult = (taskId) => {
+    const pollUrl = `http://localhost:8000/result/${taskId}`;
+
+    const interval = setInterval(async () => {
+      try {
+        const r = await fetch(pollUrl);
+        const j = await r.json();
+
+        if (j.status === "done") {
+          clearInterval(interval);
+          setLoading(false);
+          setOcrStatus("OCR complete!");
+          setMeds(j.text || []);
+        }
+      } catch (err) {
+        console.error(err);
+        clearInterval(interval);
+        setLoading(false);
+        setOcrStatus("Error fetching result.");
+        setErrorMsg("Polling failed — retry available.");
+      }
+    }, 2500);
+  };
+
+  const retryPolling = () => {
+    if (!retryTaskId) return;
+    setErrorMsg("");
+    setLoading(true);
+    setOcrStatus("Retrying...");
+    pollForResult(retryTaskId);
+  };
+
+
 
   const findStores = async () => {
     if (!navigator.geolocation) {
@@ -173,13 +248,13 @@ export default function Dashboard() {
           
         </Screen>
 
-        <Screen id="prescriptions">
+        {/* <Screen id="prescriptions">
           <h2 className="card-title">Upload your prescription below</h2>
           <div className="login-card">
             <button className="submit-button">Upload Prescription</button>
-            <br/>
+            <br/> */}
             {/* set ready variable by polling and also set showMeds == true when the ocr is received */}
-            <p>OCR Status: {ready}</p>
+            {/* <p>OCR Status: {ready}</p>
           {showMeds === true && (
             <table>
               <thead>
@@ -200,6 +275,83 @@ export default function Dashboard() {
               </tbody>
             </table>
           )}
+          </div>
+        </Screen> */}
+
+        
+        <Screen id="prescriptions">
+          <h2 className="card-title">Upload your prescription</h2>
+
+          <div className="login-card">
+
+            <label
+              className={`submit-button ${loading ? "disabled" : ""}`}
+              style={{ cursor: loading ? "not-allowed" : "pointer" }}
+            >
+              {loading ? "Please wait..." : "Upload Prescription"}
+              <input
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                disabled={loading}
+                onChange={handleFileSelected}
+              />
+            </label>
+
+            {imagePreview && (
+              <div style={{ marginTop: 20 }}>
+                <img
+                  src={imagePreview}
+                  alt="preview"
+                  style={{
+                    maxWidth: 300,
+                    borderRadius: 12,
+                    boxShadow: "0 0 10px rgba(0,0,0,0.2)",
+                    animation: "fadeIn 0.4s ease",
+                  }}
+                />
+              </div>
+            )}
+
+            <p style={{ marginTop: 15 }}>{ocrStatus}</p>
+
+            {loading && (
+              <div className="spinner" style={{ marginTop: 10 }}></div>
+            )}
+
+            {errorMsg && (
+              <div className="error-toast">
+                {errorMsg}
+                {retryTaskId && (
+                  <button className="retry-btn" onClick={retryPolling}>
+                    Retry
+                  </button>
+                )}
+              </div>
+            )}
+
+            {meds.length > 0 && (
+              <table style={{ marginTop: 20, animation: "fadeIn 0.5s ease" }}>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Dosage</th>
+                    <th>Frequency</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {meds.map((m, idx) => (
+                    <tr key={idx} style={{ animation: "slideUp 0.4s ease" }}>
+                      <td>{m.medicine_name}</td>
+                      <td>{m.dosage || "-"}</td>
+                      <td>{m.frequency || "-"}</td>
+                      <td>{m.notes || "-"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </Screen>
 
