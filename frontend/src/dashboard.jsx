@@ -1,12 +1,17 @@
 import { useState } from "react";
 import "./medihelp.css";
-import Uploady from "uploady";
 // import UploadAndDisplayImage from './uploadImage.jsx'
+
+const API_URL = "http://localhost:8000";
 
 export default function Dashboard() {
   const [tab, setTab] = useState("dashboard");
   const [showMeds, setShowMeds] = useState(false);
   const [ready, setReady] = useState("No prescription uploaded");
+
+  const [locationStatus, setLocationStatus] = useState("Click 'Find Nearest Stores' to get your location and search.");
+  const [nearestStores, setNearestStores] = useState(null);
+  const [isSearching, setIsSearching] = useState(false);
 
   const TabButton = ({ id, label }) => (
     <button className="tab-btn" onClick={() => setTab(id)}>
@@ -28,15 +33,56 @@ export default function Dashboard() {
     return file.size <= 5242880;
   };
 
-  const handleImageUpload = () => {
-    return {
-      <Uploady
-        destination={{ url: "http://localhost:8888/" }}
-        fileFilter={filterBySize}
-        accept="image/*"
-      />
+  const findStores = async () => {
+    if (!navigator.geolocation) {
+      setLocationStatus("Geolocation is not supported by your browser.");
+      return;
     }
-  }
+
+    setLocationStatus("Getting your current location...");
+    setIsSearching(true);
+    setNearestStores(null);
+
+    try {
+      // getting user location
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          // const latitude = 19.13391234;
+          // const longitude = 72.91191234;
+          // console.log("Raw Lat/Lng from Browser:", latitude, longitude);
+
+          setLocationStatus(`Location found: Lat ${latitude.toFixed(8)}, Lng ${longitude.toFixed(8)}. Searching for stores...`);
+
+          const response = await fetch(`${API_URL}/findNearestStores?latitude=${latitude}&longitude=${longitude}`, {
+            method: 'POST',
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+          
+          // displaying results
+          setNearestStores(data.nearest_stores);
+          setLocationStatus(`Found ${data.stores_found} store(s)`);
+          // using S2 Level ${data.s2_level_used}.
+          setIsSearching(false);
+        },
+        (error) => {
+          console.error("Geolocation error:", error);
+          setLocationStatus(`Error getting location: ${error.message}`);
+          setIsSearching(false);
+        },
+        { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 }
+      );
+    } catch (error) {
+      console.error("API call error:", error);
+      setLocationStatus(`Error fetching stores: ${error.message}`);
+      setIsSearching(false);
+    }
+  };
 
   return (
     <div className="login-container">
@@ -47,7 +93,7 @@ export default function Dashboard() {
         <TabButton id="dashboard" label="Dashboard" />
         <TabButton id="prescriptions" label="Prescriptions" />
         <TabButton id="reminders" label="Reminders" />
-        {/* <TabButton id="insights" label="Insights" /> */}
+        <TabButton id="storeLocator" label="Store Locator" />
         {/* <TabButton id="profile" label="Profile" /> */}
         {/* <TabButton id="settings" label="Settings" /> */}
       </nav>
@@ -55,12 +101,6 @@ export default function Dashboard() {
       {/* different pages for each tab */}
       <div id="content-area">
         <Screen id="dashboard">
-          {/* <h2 className="card-title">Dashboard</h2> */}
-          {/* <div className="login-card"> */}
-          {/*   <p>Hi, Kushagra 👋</p> */}
-          {/*   <p>Your daily health tip goes here.</p> */}
-          {/* </div> */}
-
           <div className="login-card">
             <h3>Today's Medicines</h3>
             <ul>
@@ -83,7 +123,7 @@ export default function Dashboard() {
         <Screen id="prescriptions">
           <h2 className="card-title">Upload your prescription below</h2>
           <div className="login-card">
-            <button className="submit-button" onClick={() => handleImageUpload()}>Upload Prescription</button>
+            <button className="submit-button">Upload Prescription</button>
             <br/>
             {/* set ready variable by polling and also set showMeds == true when the ocr is received */}
             <p>OCR Status: {ready}</p>
@@ -116,6 +156,57 @@ export default function Dashboard() {
             <p>Med A — 8 AM / 8 PM</p>
             <p>Med B — 9 AM</p>
             <button className="submit-button">Add Reminder</button>
+          </div>
+        </Screen>
+
+        <Screen id="storeLocator">
+          <h2 className="card-title">Nearest Store Locator</h2>
+          <div className="login-card">
+            <button 
+              className="submit-button" 
+              onClick={findStores}
+              disabled={isSearching}
+            >
+              {isSearching ? 'Searching...' : 'Find Nearest Stores'}
+            </button>
+
+            {locationStatus && (
+              <p style={{ 
+                marginTop: '10px', 
+                  fontSize: '0.9rem', 
+                  color: locationStatus.includes("Error") ? 'red' : '#666' 
+              }}>
+              {locationStatus}
+              </p>
+            )}
+
+            {nearestStores && nearestStores.length > 0 ? (
+              <>
+                <h3 style={{marginTop: '20px'}}>Stores Found:</h3>
+                <ul className="store-list">
+                  {nearestStores.map((store) => (
+                    <li key={store.store_id} className="store-item">
+                      <p>
+                        Store Code: {store.store_code} | Owner: {store.owner_name}
+                    {console.log(store)}
+                      </p>
+                      <p>
+                        Address: {store.address}, {store.district}, {store.state} - {store.pin_code}
+                      </p>
+                      <p>
+                        Contact: {store.phone_number}
+                      </p>
+                      <hr style={{margin: '10px 0'}}/>
+                    <a href={`https://www.google.com/maps/search/?api=1&query=${store.latitude},${store.longitude}`} target="_blank" rel="noopener noreferrer">View on Map</a>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : nearestStores && nearestStores.length === 0 ? (
+              <p style={{marginTop: '20px', color: 'red'}}>
+                No stores found within the search radius.
+              </p>
+            ) : null}
           </div>
         </Screen>
 

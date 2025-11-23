@@ -162,3 +162,31 @@ td {
   0%, 100% { transform: translateY(0) translateX(0); }
   50% { transform: translateY(-15px) translateX(10px); }
 }
+
+.store-list {
+    list-style: none;
+    padding: 0;
+    width: 100%;
+    margin-top: 15px;
+}
+
+.store-item {
+    background: #f9fafb;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+}
+
+.store-item p {
+    margin: 5px 0;
+    line-height: 1.4;
+    color: #1f2937;
+}
+
+.store-item hr {
+    border: none;
+    border-top: 1px dashed #d1d5db;
+    margin: 10px 0 0;
+}
