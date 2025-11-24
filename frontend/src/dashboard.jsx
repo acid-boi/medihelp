@@ -76,7 +76,6 @@ export default function Dashboard() {
 
           <td style={{ textAlign: "center" }}>{data.dosage || "-"}</td>
           <td style={{ textAlign: "center" }}>{data.frequency || "-"}</td>
-          <td style={{ textAlign: "center" }}>{data.notes || "-"}</td>
 
           <td style={{ textAlign: "center" }}>
             <button
@@ -567,7 +566,6 @@ export default function Dashboard() {
                     <th>Name</th>
                     <th>Dosage</th>
                     <th>Frequency</th>
-                    <th>Notes</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
