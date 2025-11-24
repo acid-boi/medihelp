@@ -91,7 +91,7 @@ export default function Dashboard() {
                 cursor: loadingUpdate ? "not-allowed" : "pointer",
               }}
             >
-              {loadingUpdate ? "Searching..." : "Update"}
+              {loadingUpdate ? "Searching..." : "Find Generic"}
             </button>
           </td>
         </tr>
@@ -108,6 +108,7 @@ export default function Dashboard() {
                 overflowY: "auto", // Scrolls vertically
                 overflowX: "hidden",
                 borderRadius: "12px",
+                textAlign: "left"
               }}
             >
               <div
@@ -155,18 +156,18 @@ export default function Dashboard() {
                           {r.composition2 && ` | ${r.composition2}`}
                         </div>
 
-                        <div
-                          style={{
-                            marginTop: 6,
-                            fontSize: 13,
-                            color:
-                              r.confidence === "strong"
-                                ? "#0b8043"
-                                : "#b36b00",
-                          }}
-                        >
-                          Confidence: {r.confidence} · Score: {r.score}
-                        </div>
+                        {/* <div */}
+                        {/*   style={{ */}
+                        {/*     marginTop: 6, */}
+                        {/*     fontSize: 13, */}
+                        {/*     color: */}
+                        {/*       r.confidence === "strong" */}
+                        {/*         ? "#0b8043" */}
+                        {/*         : "#b36b00", */}
+                        {/*   }} */}
+                        {/* > */}
+                        {/*   Confidence: {r.confidence} · Score: {r.score} */}
+                        {/* </div> */}
                       </div>
 
                       <button
@@ -203,7 +204,7 @@ export default function Dashboard() {
                             key={gi}
                             style={{
                               display: "flex",
-                              justifyContent: "space-between",
+                              justifyContent: "flex-start",
                               padding: "8px 10px",
                               borderRadius: 8,
                               background: "#f8fafc",
