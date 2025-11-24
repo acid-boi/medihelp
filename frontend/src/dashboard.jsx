@@ -22,6 +22,234 @@ export default function Dashboard() {
   const [errorMsg, setErrorMsg] = useState("");
   const [retryTaskId, setRetryTaskId] = useState(null);
 
+
+  const EditableRow = ({ data, index }) => {
+    const [name, setName] = useState(data.medicine_name);
+    const [loadingUpdate, setLoadingUpdate] = useState(false);
+    const [suggestions, setSuggestions] = useState([]);
+    const [expandedResult, setExpandedResult] = useState(null);
+
+    const handleUpdate = async () => {
+      try {
+        setLoadingUpdate(true);
+        setSuggestions([]);
+        setExpandedResult(null);
+
+        const res = await fetch(
+          `${API_URL}/getSuggestions?q=${encodeURIComponent(name)}`
+        );
+        if (!res.ok) throw new Error(`Status ${res.status}`);
+
+        const json = await res.json();
+        console.log("Update Row:", index, json);
+
+        setSuggestions(json.results || []);
+      } catch (err) {
+        console.error("Update error:", err);
+      } finally {
+        setLoadingUpdate(false);
+      }
+    };
+
+    const handleUseGeneric = (generic) => {
+      setName(generic.generic_name);
+      console.log("Selected generic:", generic);
+    };
+
+    return (
+      <>
+        <tr style={{ animation: "slideUp 0.4s ease" }}>
+          <td>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "8px 10px",
+                borderRadius: "8px",
+                border: "1px solid #d0d7de",
+                fontSize: "0.95rem",
+              }}
+            />
+          </td>
+
+          <td style={{ textAlign: "center" }}>{data.dosage || "-"}</td>
+          <td style={{ textAlign: "center" }}>{data.frequency || "-"}</td>
+          <td style={{ textAlign: "center" }}>{data.notes || "-"}</td>
+
+          <td style={{ textAlign: "center" }}>
+            <button
+              onClick={handleUpdate}
+              disabled={loadingUpdate}
+              style={{
+                background: "#6d28d9",
+                color: "#fff",
+                padding: "8px 12px",
+                border: "none",
+                borderRadius: "8px",
+                cursor: loadingUpdate ? "not-allowed" : "pointer",
+              }}
+            >
+              {loadingUpdate ? "Searching..." : "Update"}
+            </button>
+          </td>
+        </tr>
+
+        {/* The entire suggestions panel is scrollable */}
+        {suggestions.length > 0 && (
+          <tr>
+            <td
+              colSpan={5}
+              style={{
+                background: "#fbfbfe",
+                padding: "12px 18px",
+                maxHeight: "320px", // FIXED height
+                overflowY: "auto", // Scrolls vertically
+                overflowX: "hidden",
+                borderRadius: "12px",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "0.95rem",
+                  marginBottom: 8,
+                  color: "#333",
+                }}
+              >
+                <strong>Suggestions for “{name}”</strong> — results:{" "}
+                {suggestions.length}
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 10,
+                }}
+              >
+                {suggestions.map((r, ri) => (
+                  <div
+                    key={ri}
+                    style={{
+                      borderRadius: 10,
+                      border: "1px solid #e6e9ef",
+                      padding: 12,
+                      background: "#fff",
+                      boxShadow: "0 2px 6px rgba(16,24,40,0.05)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontWeight: 700, color: "#0b1f6b" }}>
+                          {r.brand_name}
+                        </div>
+
+                        <div style={{ fontSize: 13, marginTop: 4 }}>
+                          Composition: {r.composition1 || "-"}
+                          {r.composition2 && ` | ${r.composition2}`}
+                        </div>
+
+                        <div
+                          style={{
+                            marginTop: 6,
+                            fontSize: 13,
+                            color:
+                              r.confidence === "strong"
+                                ? "#0b8043"
+                                : "#b36b00",
+                          }}
+                        >
+                          Confidence: {r.confidence} · Score: {r.score}
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() =>
+                          setExpandedResult(
+                            expandedResult === ri ? null : ri
+                          )
+                        }
+                        style={{
+                          background: "#eef2ff",
+                          border: "1px solid #dbeafe",
+                          padding: "6px 10px",
+                          borderRadius: 8,
+                          cursor: "pointer",
+                        }}
+                      >
+                        {expandedResult === ri
+                          ? "Hide"
+                          : "View generics"}
+                      </button>
+                    </div>
+
+                    {expandedResult === ri && (
+                      <div
+                        style={{
+                          marginTop: 12,
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 8,
+                        }}
+                      >
+                        {r.matched_generics?.map((g, gi) => (
+                          <div
+                            key={gi}
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              padding: "8px 10px",
+                              borderRadius: 8,
+                              background: "#f8fafc",
+                              border: "1px solid #eef2ff",
+                            }}
+                          >
+                            <div>
+                              <div style={{ fontWeight: 600 }}>
+                                {g.generic_name}
+                              </div>
+                              <div style={{ fontSize: 13, color: "#444" }}>
+                                MRP:{" "}
+                                {g.mrp != null ? `₹${g.mrp}` : "N/A"} ·{" "}
+                                {g.unit_size || "-"} ·{" "}
+                                {g.group_name || "-"}
+                              </div>
+                            </div>
+
+                            {/* <button
+                              onClick={() => handleUseGeneric(g)}
+                              style={{
+                                background: "#0b5fff",
+                                color: "#fff",
+                                border: "none",
+                                padding: "6px 10px",
+                                borderRadius: 8,
+                                cursor: "pointer",
+                              }}
+                            >
+                              Use
+                            </button> */}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </td>
+          </tr>
+        )}
+      </>
+    );
+  };
+
+
   const TabButton = ({ id, label }) => (
     <button className="tab-btn" onClick={() => setTab(id)}>
       {label}
@@ -55,13 +283,14 @@ export default function Dashboard() {
     form.append("file", file);
 
     try {
-      const res = await fetch("http://localhost:8000/upload", {
+      const res = await fetch(`${API_URL}/upload`, {
         method: "POST",
         body: form,
       });
 
       const uploadJson = await res.json();
       const taskId = uploadJson.task_id;
+
       console.log("Upload successful, task ID:", taskId);
       setRetryTaskId(taskId);
       setOcrStatus("Processing...");
@@ -76,7 +305,7 @@ export default function Dashboard() {
   };
 
   const pollForResult = (taskId) => {
-    const pollUrl = `http://localhost:8000/result/${taskId}`;
+    const pollUrl = `${API_URL}/result/${taskId}`;
 
     const interval = setInterval(async () => {
       try {
@@ -338,16 +567,12 @@ export default function Dashboard() {
                     <th>Dosage</th>
                     <th>Frequency</th>
                     <th>Notes</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {meds.map((m, idx) => (
-                    <tr key={idx} style={{ animation: "slideUp 0.4s ease" }}>
-                      <td>{m.medicine_name}</td>
-                      <td>{m.dosage || "-"}</td>
-                      <td>{m.frequency || "-"}</td>
-                      <td>{m.notes || "-"}</td>
-                    </tr>
+                    <EditableRow key={idx} data={m} index={idx} />
                   ))}
                 </tbody>
               </table>
